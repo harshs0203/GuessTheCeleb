@@ -1,6 +1,7 @@
 package com.harshs.guesstheceleb;
 
 import android.os.AsyncTask;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +12,8 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,7 +74,24 @@ public class MainActivity extends AppCompatActivity {
 
             result=task.execute("http://www.posh24.se/kandisar").get();
 
-            Log.i("Content of URL", result);
+            String[] splitResult = result.split("<div class=\"sidebarInnerContainer\">");
+
+            Pattern p = Pattern.compile("img=\"(.*?)\"");
+            Matcher m =p.matcher(splitResult[0]);
+
+            while (m.find()){
+
+                System.out.println(m.group(1));
+            }
+
+             p = Pattern.compile("alt=\"(.*?)\"");
+             m =p.matcher(splitResult[0]);
+
+            while (m.find()){
+
+                System.out.println(m.group(1));
+            }
+
 
         } catch (InterruptedException e) {
 
