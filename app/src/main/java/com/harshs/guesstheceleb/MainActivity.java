@@ -1,23 +1,64 @@
 package com.harshs.guesstheceleb;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.ImageView;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
-    public class celeb extends AsyncTask<String, Void, String>{
+    ArrayList<String> celebUrls = new ArrayList<String>();
+    ArrayList<String> celebNames = new ArrayList<String>();
+    int choosenCeleb=0;
+
+    ImageView imageView;
+
+    public class celebImg extends AsyncTask<String, Void, Bitmap> {
+
+        @Override
+        protected Bitmap doInBackground(String... urls) {
+            try {
+
+                URL url = new URL(urls[0]);
+                HttpURLConnection Connection = (HttpURLConnection) url.openConnection();
+
+                Connection.connect();
+
+                InputStream in = Connection.getInputStream();
+
+                Bitmap myBitmap = BitmapFactory.decodeStream(in);
+
+                return myBitmap;
+
+            } catch (MalformedURLException e) {
+
+                e.printStackTrace();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+    }
+
+        public class celeb extends AsyncTask<String, Void, String>{
 
 
         @Override
@@ -70,6 +111,9 @@ public class MainActivity extends AppCompatActivity {
         celeb task = new celeb();
         String result =null;
 
+        imageView=(ImageView)findViewById(R.id.imageView);
+
+
         try {
 
             result=task.execute("http://www.posh24.se/kandisar").get();
@@ -81,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
             while (m.find()){
 
-                System.out.println(m.group(1));
+                celebUrls.add(m.group(1));
             }
 
              p = Pattern.compile("alt=\"(.*?)\"");
@@ -89,8 +133,17 @@ public class MainActivity extends AppCompatActivity {
 
             while (m.find()){
 
-                System.out.println(m.group(1));
+                celebNames.add(m.group(1));;
             }
+
+            Random random = new Random();
+            choosenCeleb= random.nextInt(celebUrls.size());
+
+            celebImg imgTask= new celebImg();
+            Bitmap myBitmap;
+
+            myBitmap=imgTask.execute(celebUrls.get(choosenCeleb)).get();
+            imageView.setImageBitmap(myBitmap);
 
 
         } catch (InterruptedException e) {
